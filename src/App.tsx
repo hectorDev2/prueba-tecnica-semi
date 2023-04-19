@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/indent */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { Table } from './components/Table'
 import type { User } from './interfaces'
