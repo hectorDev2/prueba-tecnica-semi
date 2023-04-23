@@ -1,17 +1,23 @@
-import type { User } from '../interfaces'
+import { SortBy, type User } from '../interfaces'
 
 interface Props {
   users: User[]
   showColor: boolean
-  handleDeleteUser: (email: string) => void
+  handleDeleteUser: (value: string) => void
+  changeSorting: (sort: SortBy) => void
 }
 
-export const Table = ({ users, showColor, handleDeleteUser }: Props) => {
+export const Table = ({
+  users,
+  showColor,
+  handleDeleteUser,
+  changeSorting
+}: Props) => {
   //table , thead, tbody,
   //tr, th, td
 
-  const deleteUser = (email: string) => {
-    handleDeleteUser(email)
+  const deleteUser = (value: string) => {
+    handleDeleteUser(value)
   }
 
   const getStyles = (index: number) => {
@@ -34,17 +40,35 @@ export const Table = ({ users, showColor, handleDeleteUser }: Props) => {
         <thead>
           <tr>
             <th>Photo</th>
-            <th>First Name</th>
-            <th>Last Name</th>
+            <th
+              onClick={() => {
+                changeSorting(SortBy.NAME)
+              }}
+            >
+              First Name
+            </th>
+            <th
+              onClick={() => {
+                changeSorting(SortBy.LAST)
+              }}
+            >
+              Last Name
+            </th>
             <th>Email</th>
             <th>Phone</th>
-            <th>Country</th>
+            <th
+              onClick={() => {
+                changeSorting(SortBy.COUNTRY)
+              }}
+            >
+              Country
+            </th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, index) => (
-            <tr style={getStyles(index)} key={user.email}>
+            <tr style={getStyles(index)} key={`${user.email}`}>
               <td>
                 <img
                   src={user.picture.thumbnail}

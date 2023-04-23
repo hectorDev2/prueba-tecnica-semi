@@ -1,3 +1,10 @@
+declare global {
+  interface Array<T> {
+    // eslint-disable-next-line @typescript-eslint/method-signature-style
+    toSorted(compareFn?: (a: T, b: T, z: T) => number): T[]
+  }
+}
+
 export interface User {
   gender: string
   name: Name
@@ -68,4 +75,11 @@ export interface Picture {
   large: string
   medium: string
   thumbnail: string
+}
+
+export enum SortBy {
+  NONE = 'none',
+  NAME = 'name',
+  LAST = 'last',
+  COUNTRY = 'country'
 }

@@ -1,14 +1,20 @@
-/* eslint-disable @typescript-eslint/indent */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { Table } from './components/Table'
-import type { User } from './interfaces'
+import { SortBy, type User } from './interfaces'
 
 function App () {
   const [users, setUsers] = useState([])
   const [showColor, setShowColor] = useState(false)
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sorting, setSorting] = useState<SortBy>(SortBy.NONE)
   const usersOriginal = useRef([])
+
+  const handleChangeSort = (sort: SortBy) => {
+    setSorting(sort)
+  }
 
   const toogleColor = () => {
     setShowColor(!showColor)
@@ -18,17 +24,16 @@ function App () {
     setUsers(usersOriginal.current)
   }
 
-  useEffect(() => {
-    fetch('https://randomuser.me/api/?results=100')
+  const fetchUsers = async (page: number) => {
+    return await fetch(
+      `https://randomuser.me/api/?results=10&page=${page}&seed=abc`
+    )
       .then(async res => {
-        const data = await res.json()
-        setUsers(data.results)
-        usersOriginal.current = data.results
+        if (!res.ok) throw new Error('Error to fetch data')
+        return await res.json()
       })
-      .catch((err: any) => {
-        console.error(err)
-      })
-  }, [])
+      .then(res => res.results)
+  }
 
   const filteredUsers = useMemo(() => {
     return searchQuery != null && searchQuery.length > 0
@@ -41,14 +46,39 @@ function App () {
   }, [users, searchQuery])
 
   const sortedUsers = useMemo(() => {
-    return filteredUsers
-  }, [filteredUsers])
+    if (sorting === SortBy.NONE) return filteredUsers
+    const compareProperties: Record<string, (user: User) => any> = {
+      [SortBy.COUNTRY]: user => user.location.country,
+      [SortBy.NAME]: user => user.name.first,
+      [SortBy.LAST]: user => user.name.last
+    }
 
-  const handleDeleteUser = (email: string) => {
+    return filteredUsers.toSorted((a, b) => {
+      const extractProperty = compareProperties[sorting]
+      return extractProperty(a).localeCompare(extractProperty(b))
+    })
+  }, [filteredUsers, sorting])
+
+  const handleDeleteUser = (value: string) => {
     console.log('delete')
-    const newUsers = [...users].filter((user: User) => user.email !== email)
+    const newUsers = users.filter((user: User) => user.email !== value)
     setUsers(newUsers)
   }
+
+  useEffect(() => {
+    setLoading(true)
+    fetchUsers(currentPage)
+      .then(users => {
+        setUsers(prevUsers => prevUsers.concat(users))
+        usersOriginal.current = users
+      })
+      .catch((err: any) => {
+        console.error(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [currentPage])
 
   return (
     <div className='App'>
@@ -63,12 +93,25 @@ function App () {
           placeholder='Search by country'
         />
       </div>
+      {users.length > 0 && (
+        <Table
+          handleDeleteUser={handleDeleteUser}
+          showColor={showColor}
+          users={sortedUsers}
+          changeSorting={handleChangeSort}
+        />
+      )}
+      {loading && <div>Loading...</div>}
 
-      <Table
-        handleDeleteUser={handleDeleteUser}
-        showColor={showColor}
-        users={sortedUsers}
-      />
+      {!loading && (
+        <button
+          onClick={() => {
+            setCurrentPage(currentPage + 1)
+          }}
+        >
+          10 mas
+        </button>
+      )}
     </div>
   )
 }

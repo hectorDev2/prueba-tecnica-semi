@@ -17,6 +17,7 @@ module.exports = {
     ' @typescript-eslint/no-confusing-void-expression': 'off',
     'import/no-absolute-path': 'off',
     'spaced-comment': 'off',
-    '@typescript-eslint/indent': 'off'
+    '@typescript-eslint/indent': 'off',
+    'e@typescript-eslint/method-signature-style': 'off'
   }
 }
